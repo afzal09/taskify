@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
           home: BlocBuilder<AuthBloc, AuthState>(
             builder: (context, state) {
               if (state is AuthAuthenticated) {
-                return TaskListScreen();
+                return TaskScreen(userId: state.user.uid,);
               } else if (state is AuthUnauthenticated) {
                 return const WelcomeScreen();
               } else if (state is AuthLoading) {

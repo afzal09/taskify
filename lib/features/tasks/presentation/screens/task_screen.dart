@@ -1,33 +1,61 @@
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:whatbytes_assignment/features/tasks/domain/entities/task_entity.dart';
+import 'package:whatbytes_assignment/features/tasks/presentation/blocs/task_bloc.dart';
+import 'package:whatbytes_assignment/features/tasks/presentation/blocs/task_event.dart';
 import 'package:whatbytes_assignment/src/theme/theme_values.dart';
 
-class TaskListScreen extends StatefulWidget {
-  const TaskListScreen({super.key});
+class TaskScreen extends StatefulWidget {
+  final String userId;
+  const TaskScreen({super.key, required this.userId});
 
   @override
-  State<TaskListScreen> createState() => _TaskListScreenState();
+  State<TaskScreen> createState() => _TaskListScreenState();
 }
 
-class _TaskListScreenState extends State<TaskListScreen> {
+class _TaskListScreenState extends State<TaskScreen> {
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _descController = TextEditingController();
+  DateTime? _selectedDueDate;
+  Priority _selectedPriority = Priority.medium;
+
+  Priority? _filterPriority;
+  bool _showCompleted = true;
   // Dummy data for tasks
-  final List<Map<String, dynamic>> todayTasks = [
-    {'title': 'Schedule dentist appointment', 'tags': ['Personal']},
-    {'title': 'Prepare Team Meeting', 'tags': ['Apps', 'Work']},
-  ];
+  // final List<Map<String, dynamic>> todayTasks = [
+  //   {'title': 'Schedule dentist appointment', 'tags': ['Personal']},
+  //   {'title': 'Prepare Team Meeting', 'tags': ['Apps', 'Work']},
+  // ];
 
-  final List<Map<String, dynamic>> tomorrowTasks = [
-    {'title': 'Call Charlotte', 'tags': ['Personal']},
-    {'title': 'Submit exercise 3.1', 'tags': ['CS', 'Math']},
-    {'title': 'Prepare A/B Test', 'tags': ['Apps', 'Work']},
-  ];
+  // final List<Map<String, dynamic>> tomorrowTasks = [
+  //   {'title': 'Call Charlotte', 'tags': ['Personal']},
+  //   {'title': 'Submit exercise 3.1', 'tags': ['CS', 'Math']},
+  //   {'title': 'Prepare A/B Test', 'tags': ['Apps', 'Work']},
+  // ];
 
-  final List<Map<String, dynamic>> thisWeekTasks = [
-    {'title': 'Submit exercise 3.2', 'tags': ['CS', 'Math']},
-    {'title': 'Water plants', 'tags': ['Personal']},
-  ];
+  // final List<Map<String, dynamic>> thisWeekTasks = [
+  //   {'title': 'Submit exercise 3.2', 'tags': ['CS', 'Math']},
+  //   {'title': 'Water plants', 'tags': ['Personal']},
+  // ];
+  @override
+  void initState() {
+    super.initState();
+    _loadInitialTasks();
+  }
 
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descController.dispose();
+    super.dispose();
+  }
+    void _loadInitialTasks() {
+    context.read<TaskBloc>().add(LoadTasks(widget.userId));
+  }
+
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -189,26 +217,29 @@ class _TaskListScreenState extends State<TaskListScreen> {
                     icon: Icon(Icons.format_list_bulleted_rounded, color: Colors.grey[400]),
                     onPressed: () {},
                   ),
-                  Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF6A5AE0), Color(0xFF8A7AE0)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF6A5AE0).withOpacity(0.4),
-                          spreadRadius: 2,
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
+                  ElevatedButton(
+                    onPressed: () {  },
+                    child: Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF6A5AE0), Color(0xFF8A7AE0)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
-                      ],
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF6A5AE0).withOpacity(0.4),
+                            spreadRadius: 2,
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(Icons.add_rounded, color: Colors.white, size: 30),
                     ),
-                    child: const Icon(Icons.add_rounded, color: Colors.white, size: 30),
                   ),
                   IconButton(
                     icon: Icon(Icons.calendar_today_rounded, color: Colors.grey[400]),
