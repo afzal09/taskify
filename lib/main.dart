@@ -1,19 +1,51 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:whatbytes_assignment/di_container.dart' as di;
+import 'package:whatbytes_assignment/features/auth/presentation/blocs/auth_bloc.dart';
+import 'package:whatbytes_assignment/features/auth/presentation/screens/login.dart';
+import 'package:whatbytes_assignment/features/auth/presentation/screens/welcome.dart';
+import 'package:whatbytes_assignment/features/tasks/presentation/screens/task_screen.dart';
+import 'package:whatbytes_assignment/firebase_options.dart';
+import 'package:whatbytes_assignment/src/theme/app_theme.dart';
 
-void main() {
-  runApp(const MainApp());
-}
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await di.init();
+  runApp(const MyApp());}
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: Text('Hello World!'),
+    return MultiBlocProvider(
+            providers: [
+        BlocProvider<AuthBloc>(
+          create: (context) => di.sl<AuthBloc>()..add(AuthCheckRequested()),
         ),
+      ],
+      child: MaterialApp(
+        title: 'Task Planner UI',
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.lightTheme,
+          home: BlocBuilder<AuthBloc, AuthState>(
+            builder: (context, state) {
+              if (state is AuthAuthenticated) {
+                return TaskListScreen();
+              } else if (state is AuthUnauthenticated) {
+                return const WelcomeScreen();
+              } else if (state is AuthLoading) {
+                return const Scaffold(
+                  body: Center(child: CircularProgressIndicator()),
+                );
+              }
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            },
+          ),
       ),
     );
   }
