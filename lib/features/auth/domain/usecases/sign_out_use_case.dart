@@ -1,7 +1,7 @@
-import 'package:whatbytes_assignment/features/auth/data/repository/auth_repository.dart';
+import 'package:whatbytes_assignment/features/auth/domain/repository/base_auth_repository.dart';
 
 class SignOutUseCase {
-  final AuthRepository repository;
+  final BaseAuthRepository repository;
 
   SignOutUseCase({required this.repository});
 
