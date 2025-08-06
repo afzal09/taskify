@@ -2,7 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
 import 'package:whatbytes_assignment/features/auth/data/datasources/auth_datasource.dart';
+import 'package:whatbytes_assignment/features/auth/data/datasources/firebase_auth_datasource.dart';
 import 'package:whatbytes_assignment/features/auth/data/repository/auth_repository.dart';
+import 'package:whatbytes_assignment/features/auth/domain/repository/base_auth_repository.dart';
 import 'package:whatbytes_assignment/features/auth/domain/usecases/get_current_user_use_case.dart';
 import 'package:whatbytes_assignment/features/auth/domain/usecases/sign_in_use_case.dart';
 import 'package:whatbytes_assignment/features/auth/domain/usecases/sign_out_use_case.dart';
@@ -39,12 +41,12 @@ Future<void> init()async {
   sl.registerLazySingleton(() => GetCurrentUserUseCase(repository: sl()));
 
   // Repository
-  sl.registerLazySingleton<AuthRepository>(
+  sl.registerLazySingleton<BaseAuthRepository>(
     () => AuthRepository(remoteDataSource: sl()),
   );
 
   // Data source
-  sl.registerLazySingleton<AuthDatasource>(
+  sl.registerLazySingleton<FirebaseAuthDatasource>(
     () => AuthDatasource(sl()),
   );
   

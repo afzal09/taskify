@@ -4,8 +4,8 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:whatbytes_assignment/core/errors/exceptions.dart';
-import 'package:whatbytes_assignment/features/auth/data/repository/auth_repository.dart';
 import 'package:whatbytes_assignment/features/auth/domain/entities/user_entity.dart';
+import 'package:whatbytes_assignment/features/auth/domain/repository/base_auth_repository.dart';
 import 'package:whatbytes_assignment/features/auth/domain/usecases/get_current_user_use_case.dart';
 import 'package:whatbytes_assignment/features/auth/domain/usecases/sign_in_use_case.dart';
 import 'package:whatbytes_assignment/features/auth/domain/usecases/sign_out_use_case.dart';
@@ -20,7 +20,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final SignUpUseCase signUpUseCase;
   final SignOutUseCase signOutUseCase;
   final GetCurrentUserUseCase getCurrentUserUseCase;
-  final AuthRepository authRepository; // To listen to auth state changes
+  final BaseAuthRepository authRepository; // To listen to auth state changes
 
   late StreamSubscription<UserEntity?> _userSubscription;
 

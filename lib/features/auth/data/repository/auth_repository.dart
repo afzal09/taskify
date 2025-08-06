@@ -1,10 +1,10 @@
 import 'package:whatbytes_assignment/core/errors/exceptions.dart';
-import 'package:whatbytes_assignment/features/auth/data/datasources/auth_datasource.dart';
+import 'package:whatbytes_assignment/features/auth/data/datasources/firebase_auth_datasource.dart';
 import 'package:whatbytes_assignment/features/auth/domain/entities/user_entity.dart';
 import 'package:whatbytes_assignment/features/auth/domain/repository/base_auth_repository.dart';
 
 class AuthRepository implements BaseAuthRepository {
-  final AuthDatasource remoteDataSource;
+  final FirebaseAuthDatasource remoteDataSource;
 
   AuthRepository({required this.remoteDataSource});
 

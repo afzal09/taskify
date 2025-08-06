@@ -3,7 +3,7 @@ import 'package:whatbytes_assignment/core/errors/exceptions.dart';
 import 'package:whatbytes_assignment/features/auth/data/datasources/firebase_auth_datasource.dart';
 import 'package:whatbytes_assignment/features/auth/data/models/user_model.dart';
 
-class AuthDatasource extends FirebaseAuthDatasource{
+class AuthDatasource implements FirebaseAuthDatasource{
 final FirebaseAuth firebaseAuth;
 
   AuthDatasource(this.firebaseAuth);
