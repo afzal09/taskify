@@ -4,7 +4,7 @@ import 'package:whatbytes_assignment/features/tasks/domain/entities/task_entity.
 import 'package:whatbytes_assignment/features/tasks/domain/repository/task_repository.dart';
 
 class TaskRepositoryImpl implements TaskRepository {
-  final TaskRemoteDataSourceImpl remoteDataSource;
+  final TaskRemoteDataSource remoteDataSource;
 
   TaskRepositoryImpl({required this.remoteDataSource});
 
