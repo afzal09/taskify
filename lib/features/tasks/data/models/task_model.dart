@@ -10,6 +10,7 @@ class TaskModel extends TaskEntity {
     required super.dueDate,
     super.priority,
     super.isCompleted,
+    required super.tags,
   });
 
   /// Convert model to Firestore map
@@ -21,6 +22,7 @@ class TaskModel extends TaskEntity {
       'dueDate': Timestamp.fromDate(dueDate),
       'priority': priority.name,
       'isCompleted': isCompleted,
+      'tags':tags
     };
   }
 
@@ -37,7 +39,7 @@ class TaskModel extends TaskEntity {
         (e) => e.name == data['priority'],
         orElse: () => Priority.medium,
       ),
-      isCompleted: data['isCompleted'] ?? false,
+      isCompleted: data['isCompleted'] ?? false, tags: [],
     );
   }
 
@@ -51,6 +53,7 @@ class TaskModel extends TaskEntity {
       dueDate: entity.dueDate,
       priority: entity.priority,
       isCompleted: entity.isCompleted,
+      tags: [],
     );
   }
 
@@ -63,7 +66,7 @@ class TaskModel extends TaskEntity {
       description: description,
       dueDate: dueDate,
       priority: priority,
-      isCompleted: isCompleted,
+      isCompleted: isCompleted, tags: [],
     );
   }
 }
