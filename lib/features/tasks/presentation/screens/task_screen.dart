@@ -690,16 +690,6 @@ class _TaskListScreenState extends State<TaskScreen> {
     );
   }
 
-  Widget _buildTaskCategory(List<TaskEntity> tasks) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 10),
-        Column(children: tasks.map((task) => _buildTaskItem(task)).toList()),
-      ],
-    );
-  }
-
   Widget _buildTaskItem(TaskEntity task) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12.0),
@@ -726,25 +716,76 @@ class _TaskListScreenState extends State<TaskScreen> {
               shape: BoxShape.circle,
               border: Border.all(color: Colors.grey[300]!, width: 2),
             ),
-            child: const Center(
-              child: Icon(
-                Icons.circle_outlined,
-                size: 16,
-                color: Colors.transparent,
-              ), // Placeholder for unchecked
+            child: Checkbox(
+              value: task.isCompleted,
+              onChanged: (val) {
+                context.read<TaskBloc>().add(
+                  UpdateTask(
+                    TaskEntity(
+                      id: task.id,
+                      userId: task.userId,
+                      title: task.title,
+                      description: task.description,
+                      dueDate: task.dueDate,
+                      priority: task.priority,
+                      isCompleted: val ?? false,
+                    ),
+                  ),
+                );
+              },
+              activeColor: AppColors.beigeColor,
+              checkColor: AppColors.whiteColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(4),
+              ),
             ),
           ),
           const SizedBox(width: 16),
           // Task title
-          Expanded(
-            child: Text(
-              task.title,
-              style: const TextStyle(
-                fontSize: 16,
-                color: Color(0xFF2F2E41),
-                fontWeight: FontWeight.w500,
+          Row(
+            children: [
+              Column(
+                children: [
+                  Text(
+                    task.title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Color(0xFF2F2E41),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  Text(
+                    task.description,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Color(0xFF2F2E41),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
-            ),
+              Padding(
+                padding: const EdgeInsets.only(left: 76),
+                child: IconButton(
+                  icon: Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: BoxDecoration(
+                      color: AppColors.errorColor,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Icon(
+                      Icons.delete_outline,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                  onPressed: () {
+                    _showDeleteConfirmationDialog(context, task);
+                  },
+                  tooltip: "Delete Task",
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -876,39 +917,15 @@ class _TaskListScreenState extends State<TaskScreen> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      // Column(
-                      //   crossAxisAlignment: CrossAxisAlignment.start,
-                      //   children: [
-                      //     SizedBox(height: 30),
-                      //     Flexible(
-                      //       child: ListView.builder(
-                      //         shrinkWrap: true,
-                      //         padding: const EdgeInsets.symmetric(
-                      //           horizontal: 16,
-                      //         ),
-                      //         itemCount: filteredTasks.length,
-                      //         itemBuilder: (context, index) {
-                      //           final task = filteredTasks[index];
-                      //           return _buildTaskItem(task);
-                      //         },
-                      //       ),
-                      //     ),
-                      //   ],
-                      // ),
-                      // Today's tasks
-                      Container(
-                            child: ListView.builder(
-                              shrinkWrap: true,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                              ),
-                              itemCount: filteredTasks.length,
-                              itemBuilder: (context, index) {
-                                final task = filteredTasks[index];
-                                return _buildTaskItem(task);
-                              },
-                            ),
-                          ),
+                      ListView.builder(
+                        shrinkWrap: true,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: filteredTasks.length,
+                        itemBuilder: (context, index) {
+                          final task = filteredTasks[index];
+                          return _buildTaskItem(task);
+                        },
+                      ),
                       const SizedBox(
                         height: 100,
                       ), // Space for bottom navigation
@@ -978,7 +995,29 @@ class _TaskListScreenState extends State<TaskScreen> {
                     Icons.calendar_today_rounded,
                     color: Colors.grey[400],
                   ),
-                  onPressed: () {},
+                  onPressed: () async => await showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime.now(),
+                    lastDate: DateTime(2101),
+                    builder: (context, child) {
+                      return Theme(
+                        data: ThemeData.light().copyWith(
+                          colorScheme: const ColorScheme.light(
+                            primary: AppColors.appsTagColor,
+                            onPrimary: AppColors.whiteColor,
+                            onSurface: AppColors.blackColor,
+                          ),
+                          textButtonTheme: TextButtonThemeData(
+                            style: TextButton.styleFrom(
+                              foregroundColor: AppColors.blackColor,
+                            ),
+                          ),
+                        ),
+                        child: child!,
+                      );
+                    },
+                  ),
                 ),
               ],
             ),
@@ -992,86 +1031,76 @@ class _TaskListScreenState extends State<TaskScreen> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
+        Container(
+          height: 180.0,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF6A5AE0), Color(0xFF8A7AE0)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: IconButton(
+                        icon: Icon(
+                          Icons.grid_view_rounded,
+                          color: AppColors.whiteColor,
+                        ),
+                        onPressed: _showFilterOptions,
+                        tooltip: "Filter Tasks",
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: IconButton(
+                        icon: Icon(Icons.logout, color: AppColors.whiteColor),
+                        onPressed: () {
+                          context.read<AuthBloc>().add(AuthSignOutRequested());
+                        },
+                        tooltip: "Log out",
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
                 Container(
-                  height: 180.0,
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Color(0xFF6A5AE0), Color(0xFF8A7AE0)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(12.0),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(2),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: IconButton(
-                                icon: Icon(
-                                  Icons.grid_view_rounded,
-                                  color: AppColors.whiteColor,
-                                ),
-                                onPressed: _showFilterOptions,
-                                tooltip: "Filter Tasks",
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.all(2),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: IconButton(
-                                icon: Icon(
-                                  Icons.logout,
-                                  color: AppColors.whiteColor,
-                                ),
-                                onPressed: () {
-                                  context.read<AuthBloc>().add(
-                                    AuthSignOutRequested(),
-                                  );
-                                },
-                                tooltip: "Log out",
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.3),
-                            borderRadius: BorderRadius.circular(12.0),
-                          ),
-                          child: TextField(
-                            decoration: InputDecoration(
-                              hintText: 'Search',
-                              hintStyle: TextStyle(
-                                color: Colors.grey.withOpacity(0.7),
-                              ),
-                              prefixIcon: Icon(
-                                Icons.search,
-                                color: Colors.grey,
-                              ),
-                              border: InputBorder.none,
-                              enabledBorder: InputBorder.none,
-                              focusedBorder: InputBorder.none,
-                            ),
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      ],
+                  child: TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Search',
+                      hintStyle: TextStyle(color: Colors.grey.withOpacity(0.7)),
+                      prefixIcon: Icon(Icons.search, color: Colors.grey),
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
                     ),
+                    style: const TextStyle(color: Colors.white),
                   ),
                 ),
+              ],
+            ),
+          ),
+        ),
         Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -1112,7 +1141,7 @@ class _TaskListScreenState extends State<TaskScreen> {
             ],
           ),
         ),
-          Align(
+        Align(
           child: Container(
             height: 70,
             decoration: BoxDecoration(
@@ -1176,6 +1205,48 @@ class _TaskListScreenState extends State<TaskScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  void _showDeleteConfirmationDialog(BuildContext context, TaskEntity task) {
+    final textTheme = Theme.of(context).textTheme;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.backgroundColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          'Delete Task?',
+          style: textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: AppColors.blackColor,
+          ),
+        ),
+        content: Text(
+          'Are you sure you want to delete "${task.title}"?',
+          style: textTheme.bodyMedium?.copyWith(color: AppColors.greyColor),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            style: TextButton.styleFrom(foregroundColor: AppColors.greyColor),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              context.read<TaskBloc>().add(DeleteTask(task.id!, task.userId));
+              Navigator.pop(ctx);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.errorColor,
+              foregroundColor: AppColors.whiteColor,
+              elevation: 3,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
     );
   }
 }
