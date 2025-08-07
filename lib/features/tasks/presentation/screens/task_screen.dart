@@ -25,23 +25,10 @@ class _TaskListScreenState extends State<TaskScreen> {
   DateTime? _selectedDueDate;
   Priority _selectedPriority = Priority.medium;
 
+  // Filters for the task list
   Priority? _filterPriority;
-  bool _showCompleted = true;
-  //   final List<Map<String, dynamic>> todayTasks = [
-  //   {'title': 'Schedule dentist appointment', 'tags': ['Personal']},
-  //   {'title': 'Prepare Team Meeting', 'tags': ['Apps', 'Work']},
-  // ];
+  bool _showCompleted = true; // true means show all, false means show incomplete only
 
-  // final List<Map<String, dynamic>> tomorrowTasks = [
-  //   {'title': 'Call Charlotte', 'tags': ['Personal']},
-  //   {'title': 'Submit exercise 3.1', 'tags': ['CS', 'Math']},
-  //   {'title': 'Prepare A/B Test', 'tags': ['Apps', 'Work']},
-  // ];
-
-  // final List<Map<String, dynamic>> thisWeekTasks = [
-  //   {'title': 'Submit exercise 3.2', 'tags': ['CS', 'Math']},
-  //   {'title': 'Water plants', 'tags': ['Personal']},
-  // ];
   @override
   void initState() {
     super.initState();
@@ -55,8 +42,11 @@ class _TaskListScreenState extends State<TaskScreen> {
     super.dispose();
   }
 
+  // Helper to load tasks with current filters
   void _loadInitialTasks() {
-    context.read<TaskBloc>().add(LoadTasks(widget.userId));
+    context.read<TaskBloc>().add(LoadTasks(
+          widget.userId,
+        ));
   }
 
   void _showTaskFormModalSheet({TaskEntity? task}) {
@@ -393,7 +383,7 @@ class _TaskListScreenState extends State<TaskScreen> {
         title: title,
         description: _descController.text.trim(),
         dueDate: _selectedDueDate!,
-        priority: task.priority,
+        priority: _selectedPriority, // Ensure priority is updated
         isCompleted: task.isCompleted,
       );
       context.read<TaskBloc>().add(UpdateTask(updatedTask));
@@ -442,7 +432,6 @@ class _TaskListScreenState extends State<TaskScreen> {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final appBarTheme = Theme.of(context).appBarTheme;
     return Scaffold(
       body: BlocConsumer<TaskBloc, TaskState>(
         listener: (context, state) {
@@ -458,6 +447,11 @@ class _TaskListScreenState extends State<TaskScreen> {
                 margin: const EdgeInsets.all(16),
               ),
             );
+          } else if (state is TaskLoaded || state is TaskLoading) {
+            // Re-load tasks if an action (create, update, delete) changes the state
+            // This ensures filters are reapplied if needed.
+            // This listener will ensure the main screen rebuilds with new data after CUD operations.
+            // The actual filtering happens in _buildTaskList
           }
         },
         builder: (context, state) {
@@ -466,9 +460,9 @@ class _TaskListScreenState extends State<TaskScreen> {
           } else if (state is TaskLoaded) {
             return _buildTaskList(state, textTheme);
           } else if (state is TaskError) {
-            // return _buildErrorState(state, textTheme);
-            return Center(child: Text('task is error'));
+            return Center(child: Text('Error: ${state.message}'));
           }
+          // Default to loading state or an initial state if none matches
           return _buildLoadingState(textTheme);
         },
       ),
@@ -502,85 +496,136 @@ class _TaskListScreenState extends State<TaskScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
       ),
       builder: (ctx) {
-        return Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: AppColors.backgroundColor,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Handle indicator
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 5,
-                  margin: const EdgeInsets.only(bottom: 15),
-                  decoration: BoxDecoration(
-                    color: AppColors.beigeColor.withOpacity(0.5),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
+        // Use StatefulBuilder to manage the internal state of the filter options
+        // without rebuilding the entire TaskScreen until filters are applied.
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            return Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: AppColors.backgroundColor,
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(25)),
               ),
-
-              // Title
-              Text(
-                "Filter Your Tasks",
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.blackColor,
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // Priority filters
-              Text(
-                "Priority:",
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.blackColor.withOpacity(0.8),
-                ),
-              ),
-              const SizedBox(height: 10),
-              _buildPriorityFilterChips(),
-              const SizedBox(height: 20),
-
-              // Status filters
-              Text(
-                "Completion Status:",
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.blackColor.withOpacity(0.8),
-                ),
-              ),
-              const SizedBox(height: 10),
-              _buildStatusFilterChips(),
-              const SizedBox(height: 30),
-
-              // Close button
-              Center(
-                child: TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text(
-                    "Close",
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      fontSize: 16,
-                      color: AppColors.blackColor,
-                      fontWeight: FontWeight.bold,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Handle indicator
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 5,
+                      margin: const EdgeInsets.only(bottom: 15),
+                      decoration: BoxDecoration(
+                        color: AppColors.beigeColor.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                     ),
                   ),
-                ),
+
+                  // Title
+                  Text(
+                    "Filter Your Tasks",
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.blackColor,
+                        ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Priority filters
+                  Text(
+                    "Priority:",
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.blackColor.withOpacity(0.8),
+                        ),
+                  ),
+                  const SizedBox(height: 10),
+                  _buildPriorityFilterChips(setModalState),
+                  const SizedBox(height: 20),
+
+                  // Status filters
+                  Text(
+                    "Completion Status:",
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.blackColor.withOpacity(0.8),
+                        ),
+                  ),
+                  const SizedBox(height: 10),
+                  _buildStatusFilterChips(setModalState),
+                  const SizedBox(height: 30),
+
+                  // Apply Filters button
+                  Center(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // When filters are applied, update the main state and pop
+                        setState(() {
+                          // The state variables _filterPriority and _showCompleted
+                          // are already updated by the individual chip's setState calls
+                          // within the StatefulBuilder.
+                          // Now, dispatch LoadTasks to re-fetch/re-filter based on these.
+                          _loadInitialTasks();
+                        });
+                        Navigator.pop(context); // Close the modal
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryColor,
+                        foregroundColor: AppColors.whiteColor,
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 12, horizontal: 30),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 3,
+                      ),
+                      child: Text(
+                        "Apply Filters",
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                              fontSize: 16,
+                              color: AppColors.whiteColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  // Clear Filters button
+                  Center(
+                    child: TextButton(
+                      onPressed: () {
+                        setModalState(() {
+                          _filterPriority = null;
+                          _showCompleted = true;
+                        });
+                        setState(() {
+                          _loadInitialTasks();
+                        });
+                        Navigator.pop(context);
+                      },
+                      child: Text(
+                        "Clear Filters",
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                              fontSize: 16,
+                              color: AppColors.blackColor,
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
   }
 
-  Widget _buildPriorityFilterChips() {
+  Widget _buildPriorityFilterChips(StateSetter setModalState) {
     return Wrap(
       spacing: 10,
       runSpacing: 8,
@@ -591,16 +636,17 @@ class _TaskListScreenState extends State<TaskScreen> {
           selected: _filterPriority == null,
           selectedColor: AppColors.appsTagColor.withOpacity(0.2),
           checkmarkColor: AppColors.appsTagColor,
-          onSelected: (_) => setState(() {
-            _filterPriority = null;
-            Navigator.pop(context);
-          }),
+          onSelected: (_) {
+            setModalState(() {
+              _filterPriority = null;
+            });
+          },
           labelStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
-            color: _filterPriority == null
-                ? AppColors.appsTagColor
-                : AppColors.blackColor,
-            fontWeight: FontWeight.w600,
-          ),
+                color: _filterPriority == null
+                    ? AppColors.appsTagColor
+                    : AppColors.blackColor,
+                fontWeight: FontWeight.w600,
+              ),
           backgroundColor: AppColors.lightGreyColor,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
@@ -615,16 +661,17 @@ class _TaskListScreenState extends State<TaskScreen> {
             selected: _filterPriority == priority,
             selectedColor: AppColors.appsTagColor.withOpacity(0.2),
             checkmarkColor: AppColors.appsTagColor,
-            onSelected: (_) => setState(() {
-              _filterPriority = priority;
-              Navigator.pop(context);
-            }),
+            onSelected: (_) {
+              setModalState(() {
+                _filterPriority = priority;
+              });
+            },
             labelStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: _filterPriority == priority
-                  ? AppColors.appsTagColor
-                  : AppColors.blackColor,
-              fontWeight: FontWeight.w600,
-            ),
+                  color: _filterPriority == priority
+                      ? AppColors.appsTagColor
+                      : AppColors.blackColor,
+                  fontWeight: FontWeight.w600,
+                ),
             backgroundColor: AppColors.lightGreyColor,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
@@ -636,7 +683,7 @@ class _TaskListScreenState extends State<TaskScreen> {
     );
   }
 
-  Widget _buildStatusFilterChips() {
+  Widget _buildStatusFilterChips(StateSetter setModalState) {
     return Wrap(
       spacing: 10,
       runSpacing: 8,
@@ -647,16 +694,17 @@ class _TaskListScreenState extends State<TaskScreen> {
           selected: _showCompleted,
           selectedColor: AppColors.appsTagColor.withOpacity(0.2),
           checkmarkColor: AppColors.appsTagColor,
-          onSelected: (_) => setState(() {
-            _showCompleted = true;
-            Navigator.pop(context);
-          }),
+          onSelected: (_) {
+            setModalState(() {
+              _showCompleted = true;
+            });
+          },
           labelStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
-            color: _showCompleted
-                ? AppColors.appsTagColor
-                : AppColors.blackColor,
-            fontWeight: FontWeight.w600,
-          ),
+                color: _showCompleted
+                    ? AppColors.appsTagColor
+                    : AppColors.blackColor,
+                fontWeight: FontWeight.w600,
+              ),
           backgroundColor: AppColors.lightGreyColor,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
@@ -670,16 +718,17 @@ class _TaskListScreenState extends State<TaskScreen> {
           selected: !_showCompleted,
           selectedColor: AppColors.appsTagColor.withOpacity(0.2),
           checkmarkColor: AppColors.appsTagColor,
-          onSelected: (_) => setState(() {
-            _showCompleted = false;
-            Navigator.pop(context);
-          }),
+          onSelected: (_) {
+            setModalState(() {
+              _showCompleted = false;
+            });
+          },
           labelStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
-            color: !_showCompleted
-                ? AppColors.appsTagColor
-                : AppColors.blackColor,
-            fontWeight: FontWeight.w600,
-          ),
+                color: !_showCompleted
+                    ? AppColors.appsTagColor
+                    : AppColors.blackColor,
+                fontWeight: FontWeight.w600,
+              ),
           backgroundColor: AppColors.lightGreyColor,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
@@ -707,83 +756,142 @@ class _TaskListScreenState extends State<TaskScreen> {
         ],
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Task completion circle
-          Container(
-            width: 24,
-            height: 24,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.grey[300]!, width: 2),
-            ),
-            child: Checkbox(
-              value: task.isCompleted,
-              onChanged: (val) {
-                context.read<TaskBloc>().add(
-                  UpdateTask(
-                    TaskEntity(
-                      id: task.id,
-                      userId: task.userId,
-                      title: task.title,
-                      description: task.description,
-                      dueDate: task.dueDate,
-                      priority: task.priority,
-                      isCompleted: val ?? false,
+          // Task completion checkbox
+          InkWell(
+            onTap: () {
+              context.read<TaskBloc>().add(
+                    UpdateTask(
+                      task.copyWith(isCompleted: !task.isCompleted),
                     ),
-                  ),
-                );
-              },
-              activeColor: AppColors.beigeColor,
-              checkColor: AppColors.whiteColor,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(4),
+                  );
+            },
+            child: Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: task.isCompleted ? AppColors.beigeColor : Colors.white,
+                border: Border.all(
+                  color: task.isCompleted
+                      ? AppColors.beigeColor
+                      : Colors.grey[300]!,
+                  width: 2,
+                ),
               ),
+              child: task.isCompleted
+                  ? const Icon(
+                      Icons.check,
+                      size: 16,
+                      color: AppColors.whiteColor,
+                    )
+                  : null,
             ),
           ),
           const SizedBox(width: 16),
-          // Task title
-          Row(
-            children: [
-              Column(
-                children: [
-                  Text(
-                    task.title,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Color(0xFF2F2E41),
-                      fontWeight: FontWeight.w500,
-                    ),
+          // Task details
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  task.title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: AppColors.blackColor,
+                    fontWeight: FontWeight.w500,
+                    decoration:
+                        task.isCompleted ? TextDecoration.lineThrough : null,
+                    decorationColor: AppColors.greyColor,
                   ),
+                ),
+                if (task.description.isNotEmpty) ...[
+                  const SizedBox(height: 4),
                   Text(
                     task.description,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Color(0xFF2F2E41),
-                      fontWeight: FontWeight.w500,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: AppColors.greyColor,
+                      decoration:
+                          task.isCompleted ? TextDecoration.lineThrough : null,
+                      decorationColor: AppColors.greyColor,
                     ),
                   ),
                 ],
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: 76),
-                child: IconButton(
-                  icon: Container(
-                    padding: const EdgeInsets.all(3),
-                    decoration: BoxDecoration(
-                      color: AppColors.errorColor,
-                      borderRadius: BorderRadius.circular(6),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.calendar_today,
+                      size: 14,
+                      color: AppColors.greyColor,
                     ),
-                    child: const Icon(
-                      Icons.delete_outline,
-                      color: Colors.white,
-                      size: 24,
+                    const SizedBox(width: 4),
+                    Text(
+                      DateFormat('MMM dd, yyyy').format(task.dueDate),
+                      style: TextStyle(fontSize: 12, color: AppColors.greyColor),
                     ),
-                  ),
-                  onPressed: () {
-                    _showDeleteConfirmationDialog(context, task);
-                  },
-                  tooltip: "Delete Task",
+                    const SizedBox(width: 12),
+                    Container(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: _getPriorityBgColor(task.priority),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        task.priority.toString().split('.').last,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: _getPriorityColor(task.priority),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
+              ],
+            ),
+          ),
+          // Edit and Delete buttons
+          Column(
+            children: [
+              IconButton(
+                icon: Container(
+                  padding: const EdgeInsets.all(3),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Icon(
+                    Icons.edit_outlined,
+                    color: AppColors.primaryColor,
+                    size: 20,
+                  ),
+                ),
+                onPressed: () {
+                  _showTaskFormModalSheet(task: task);
+                },
+                tooltip: "Edit Task",
+              ),
+              IconButton(
+                icon: Container(
+                  padding: const EdgeInsets.all(3),
+                  decoration: BoxDecoration(
+                    color: AppColors.errorColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: const Icon(
+                    Icons.delete_outline,
+                    color: AppColors.errorColor,
+                    size: 20,
+                  ),
+                ),
+                onPressed: () {
+                  _showDeleteConfirmationDialog(context, task);
+                },
+                tooltip: "Delete Task",
               ),
             ],
           ),
@@ -793,107 +901,27 @@ class _TaskListScreenState extends State<TaskScreen> {
   }
 
   Widget _buildTaskList(TaskLoaded state, TextTheme textTheme) {
-    // final List<TaskEntity> tasks = [TaskEntity(userId: '111', title: "title", description: "description", dueDate: DateTime.now())];
     List<TaskEntity> filteredTasks = state.tasks.where((task) {
       final matchesPriority =
           _filterPriority == null || task.priority == _filterPriority;
       final matchesStatus = _showCompleted || !task.isCompleted;
       return matchesPriority && matchesStatus;
-    }).toList()..sort((a, b) => a.dueDate.compareTo(b.dueDate));
+    }).toList()
+      ..sort((a, b) => a.dueDate.compareTo(b.dueDate));
 
-    if (filteredTasks.isEmpty) {
-      return _buildEmptyState(textTheme);
-    }
     return Stack(
       children: [
-        // Main content scrollable view
         SafeArea(
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // The top app bar section
-                Container(
-                  height: 180.0,
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Color(0xFF6A5AE0), Color(0xFF8A7AE0)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(2),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: IconButton(
-                                icon: Icon(
-                                  Icons.grid_view_rounded,
-                                  color: AppColors.whiteColor,
-                                ),
-                                onPressed: _showFilterOptions,
-                                tooltip: "Filter Tasks",
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.all(2),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: IconButton(
-                                icon: Icon(
-                                  Icons.logout,
-                                  color: AppColors.whiteColor,
-                                ),
-                                onPressed: () {
-                                  context.read<AuthBloc>().add(
-                                    AuthSignOutRequested(),
-                                  );
-                                },
-                                tooltip: "Log out",
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.3),
-                            borderRadius: BorderRadius.circular(12.0),
-                          ),
-                          child: TextField(
-                            decoration: InputDecoration(
-                              hintText: 'Search',
-                              hintStyle: TextStyle(
-                                color: Colors.grey.withOpacity(0.7),
-                              ),
-                              prefixIcon: Icon(
-                                Icons.search,
-                                color: Colors.grey,
-                              ),
-                              border: InputBorder.none,
-                              enabledBorder: InputBorder.none,
-                              focusedBorder: InputBorder.none,
-                            ),
-                            style: const TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                _TaskAppBar(
+                  onFilterPressed: _showFilterOptions,
+                  onLogoutPressed: () {
+                    context.read<AuthBloc>().add(AuthSignOutRequested());
+                  },
                 ),
-                // The rest of the content
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -917,18 +945,21 @@ class _TaskListScreenState extends State<TaskScreen> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      ListView.builder(
-                        shrinkWrap: true,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: filteredTasks.length,
-                        itemBuilder: (context, index) {
-                          final task = filteredTasks[index];
-                          return _buildTaskItem(task);
-                        },
-                      ),
-                      const SizedBox(
-                        height: 100,
-                      ), // Space for bottom navigation
+                      if (filteredTasks.isEmpty)
+                        _buildEmptyStateContent(textTheme)
+                      else
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics:
+                              const NeverScrollableScrollPhysics(), // Important for nested scroll views
+                          padding: EdgeInsets.zero, // Remove default padding
+                          itemCount: filteredTasks.length,
+                          itemBuilder: (context, index) {
+                            final task = filteredTasks[index];
+                            return _buildTaskItem(task);
+                          },
+                        ),
+                      const SizedBox(height: 100), // Space for bottom navigation
                     ],
                   ),
                 ),
@@ -936,274 +967,75 @@ class _TaskListScreenState extends State<TaskScreen> {
             ),
           ),
         ),
-        // Bottom Navigation Bar
-        Align(
-          alignment: Alignment.bottomCenter,
-          child: Container(
-            height: 70,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(24),
-                topRight: Radius.circular(24),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
-                  spreadRadius: 5,
-                  blurRadius: 7,
-                  offset: const Offset(0, 3),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                IconButton(
-                  icon: Icon(
-                    Icons.format_list_bulleted_rounded,
-                    color: Colors.grey[400],
-                  ),
-                  onPressed: () {},
-                ),
-                ElevatedButton(
-                  onPressed: () => _showTaskFormModalSheet(),
-                  child: Container(
-                    width: 20,
-                    height: 20,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF6A5AE0), Color(0xFF8A7AE0)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF6A5AE0).withOpacity(0.4),
-                          spreadRadius: 2,
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
+        _BottomNavBar(
+          onAddTaskPressed: _showTaskFormModalSheet,
+          onCalendarPressed: () async {
+            await showDatePicker(
+              context: context,
+              initialDate: DateTime.now(),
+              firstDate: DateTime.now(),
+              lastDate: DateTime(2101),
+              builder: (context, child) {
+                return Theme(
+                  data: ThemeData.light().copyWith(
+                    colorScheme: const ColorScheme.light(
+                      primary: AppColors.appsTagColor,
+                      onPrimary: AppColors.whiteColor,
+                      onSurface: AppColors.blackColor,
                     ),
-                    child: Icon(Icons.add_rounded, color: Colors.white),
+                    textButtonTheme: TextButtonThemeData(
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.blackColor,
+                      ),
+                    ),
                   ),
-                ),
-                IconButton(
-                  icon: Icon(
-                    Icons.calendar_today_rounded,
-                    color: Colors.grey[400],
-                  ),
-                  onPressed: () async => await showDatePicker(
-                    context: context,
-                    initialDate: DateTime.now(),
-                    firstDate: DateTime.now(),
-                    lastDate: DateTime(2101),
-                    builder: (context, child) {
-                      return Theme(
-                        data: ThemeData.light().copyWith(
-                          colorScheme: const ColorScheme.light(
-                            primary: AppColors.appsTagColor,
-                            onPrimary: AppColors.whiteColor,
-                            onSurface: AppColors.blackColor,
-                          ),
-                          textButtonTheme: TextButtonThemeData(
-                            style: TextButton.styleFrom(
-                              foregroundColor: AppColors.blackColor,
-                            ),
-                          ),
-                        ),
-                        child: child!,
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
+                  child: child!,
+                );
+              },
+            );
+          },
         ),
       ],
     );
   }
 
-  Widget _buildEmptyState(TextTheme textTheme) {
+  Widget _buildEmptyStateContent(TextTheme textTheme) {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Container(
-          height: 180.0,
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF6A5AE0), Color(0xFF8A7AE0)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: IconButton(
-                        icon: Icon(
-                          Icons.grid_view_rounded,
-                          color: AppColors.whiteColor,
-                        ),
-                        onPressed: _showFilterOptions,
-                        tooltip: "Filter Tasks",
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: IconButton(
-                        icon: Icon(Icons.logout, color: AppColors.whiteColor),
-                        onPressed: () {
-                          context.read<AuthBloc>().add(AuthSignOutRequested());
-                        },
-                        tooltip: "Log out",
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.3),
-                    borderRadius: BorderRadius.circular(12.0),
-                  ),
-                  child: TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Search',
-                      hintStyle: TextStyle(color: Colors.grey.withOpacity(0.7)),
-                      prefixIcon: Icon(Icons.search, color: Colors.grey),
-                      border: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                    ),
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                ),
-              ],
-            ),
-          ),
+        Icon(
+          Icons.task_alt,
+          size: 100,
+          color: AppColors.greyColor.withOpacity(0.7),
         ),
-        Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.task_alt,
-                size: 100,
-                color: AppColors.greyColor.withOpacity(0.7),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                _filterPriority != null || !_showCompleted
-                    ? "No matching tasks found."
-                    : "You're all caught up! No tasks here.",
-                style: textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.blackColor,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              if (_filterPriority != null || !_showCompleted)
-                TextButton.icon(
-                  onPressed: () {
-                    setState(() {
-                      _filterPriority = null;
-                      _showCompleted = true;
-                    });
-                  },
-                  icon: Icon(Icons.clear, color: AppColors.greyColor),
-                  label: Text(
-                    "Clear Filters",
-                    style: textTheme.labelLarge?.copyWith(
-                      color: AppColors.greyColor,
-                    ),
-                  ),
-                ),
-            ],
+        const SizedBox(height: 20),
+        Text(
+          _filterPriority != null || !_showCompleted
+              ? "No matching tasks found."
+              : "You're all caught up! No tasks here.",
+          style: textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: AppColors.blackColor,
           ),
+          textAlign: TextAlign.center,
         ),
-        Align(
-          child: Container(
-            height: 70,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(24),
-                topRight: Radius.circular(24),
+        const SizedBox(height: 20),
+        if (_filterPriority != null || !_showCompleted)
+          TextButton.icon(
+            onPressed: () {
+              setState(() {
+                _filterPriority = null;
+                _showCompleted = true;
+              });
+              _loadInitialTasks(); // Reload tasks after clearing filters
+            },
+            icon: Icon(Icons.clear, color: AppColors.greyColor),
+            label: Text(
+              "Clear Filters",
+              style: textTheme.labelLarge?.copyWith(
+                color: AppColors.greyColor,
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.1),
-                  spreadRadius: 5,
-                  blurRadius: 7,
-                  offset: const Offset(0, 3),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                IconButton(
-                  icon: Icon(
-                    Icons.format_list_bulleted_rounded,
-                    color: Colors.grey[400],
-                  ),
-                  onPressed: () {},
-                ),
-                ElevatedButton(
-                  onPressed: () => _showTaskFormModalSheet(),
-                  child: Container(
-                    width: 20,
-                    height: 20,
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF6A5AE0), Color(0xFF8A7AE0)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF6A5AE0).withOpacity(0.4),
-                          spreadRadius: 2,
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Icon(Icons.add_rounded, color: Colors.white),
-                  ),
-                ),
-                IconButton(
-                  icon: Icon(
-                    Icons.calendar_today_rounded,
-                    color: Colors.grey[400],
-                  ),
-                  onPressed: () {},
-                ),
-              ],
             ),
           ),
-        ),
       ],
     );
   }
@@ -1246,6 +1078,182 @@ class _TaskListScreenState extends State<TaskScreen> {
             child: const Text('Delete'),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// Reusable AppBar widget
+class _TaskAppBar extends StatelessWidget {
+  final VoidCallback onFilterPressed;
+  final VoidCallback onLogoutPressed;
+
+  const _TaskAppBar({
+    required this.onFilterPressed,
+    required this.onLogoutPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 180.0,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF6A5AE0), Color(0xFF8A7AE0)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: IconButton(
+                    icon: Icon(
+                      Icons.grid_view_rounded,
+                      color: AppColors.whiteColor,
+                    ),
+                    onPressed: onFilterPressed,
+                    tooltip: "Filter Tasks",
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: IconButton(
+                    icon: Icon(
+                      Icons.logout,
+                      color: AppColors.whiteColor,
+                    ),
+                    onPressed: onLogoutPressed,
+                    tooltip: "Log out",
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(12.0),
+              ),
+              child: TextField(
+                decoration: InputDecoration(
+                  hintText: 'Search',
+                  hintStyle: TextStyle(
+                    color: Colors.grey.withOpacity(0.7),
+                  ),
+                  prefixIcon: Icon(
+                    Icons.search,
+                    color: Colors.grey,
+                  ),
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                ),
+                style: const TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Reusable Bottom Navigation Bar widget
+class _BottomNavBar extends StatelessWidget {
+  final VoidCallback onAddTaskPressed;
+  final VoidCallback onCalendarPressed;
+
+  const _BottomNavBar({
+    required this.onAddTaskPressed,
+    required this.onCalendarPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: Container(
+        height: 70,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(24),
+            topRight: Radius.circular(24),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.1),
+              spreadRadius: 5,
+              blurRadius: 7,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            IconButton(
+              icon: Icon(
+                Icons.format_list_bulleted_rounded,
+                color: Colors.grey[400],
+              ),
+              onPressed: () {}, // Placeholder for list view action
+            ),
+            ElevatedButton(
+              onPressed: onAddTaskPressed,
+              style: ElevatedButton.styleFrom(
+                shape: const CircleBorder(),
+                padding: EdgeInsets.zero,
+                elevation: 0, // Remove default elevation
+                backgroundColor: Colors.transparent, // Make button transparent
+              ),
+              child: Container(
+                width: 50, // Increased size for better tap target
+                height: 50, // Increased size for better tap target
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF6A5AE0), Color(0xFF8A7AE0)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF6A5AE0).withOpacity(0.4),
+                      spreadRadius: 2,
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: const Icon(Icons.add_rounded, color: Colors.white, size: 30),
+              ),
+            ),
+            IconButton(
+              icon: Icon(
+                Icons.calendar_today_rounded,
+                color: Colors.grey[400],
+              ),
+              onPressed: onCalendarPressed,
+            ),
+          ],
+        ),
       ),
     );
   }

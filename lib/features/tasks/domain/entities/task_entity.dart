@@ -18,4 +18,24 @@ class TaskEntity {
     this.priority = Priority.medium,
     this.isCompleted = false,
   });
+
+    TaskEntity copyWith({
+    String? id,
+    String? userId,
+    String? title,
+    String? description,
+    DateTime? dueDate,
+    Priority? priority,
+    bool? isCompleted,
+  }) {
+    return TaskEntity(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      dueDate: dueDate ?? this.dueDate,
+      priority: priority ?? this.priority,
+      isCompleted: isCompleted ?? this.isCompleted,
+    );
+  }
 }
