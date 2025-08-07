@@ -92,7 +92,8 @@ class WelcomeScreen extends StatelessWidget {
                       height: MediaQuery.of(context).size.height * 0.25, // Adjust height as needed
                       width: double.infinity,
                       color: const Color(0xFF6A5AE0),
-                      child: Center(
+                      child: Align(
+                        alignment: Alignment.centerRight,
                         child: GestureDetector(
                           onTap: () {
                             Navigator.push(
@@ -102,10 +103,6 @@ class WelcomeScreen extends StatelessWidget {
                           },
                           child: Container(
                             padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              shape: BoxShape.circle,
-                            ),
                             child: const Icon(
                               Icons.arrow_forward_rounded,
                               color: Colors.white,

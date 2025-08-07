@@ -8,7 +8,6 @@ class TaskEntity {
   final DateTime dueDate;
   final Priority priority;
   final bool isCompleted;
-  final List<String> tags;
 
   TaskEntity({
     this.id,
@@ -18,6 +17,5 @@ class TaskEntity {
     required this.dueDate,
     this.priority = Priority.medium,
     this.isCompleted = false,
-    required this.tags
   });
 }

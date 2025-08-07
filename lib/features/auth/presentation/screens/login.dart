@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:whatbytes_assignment/features/auth/presentation/blocs/auth_bloc.dart';
 import 'package:whatbytes_assignment/features/auth/presentation/screens/sign_up.dart';
+import 'package:whatbytes_assignment/features/tasks/presentation/screens/task_screen.dart';
 import 'package:whatbytes_assignment/src/theme/theme_values.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -22,9 +23,6 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
-    // Pre-fill for demonstration
-    emailController.text = 'User@gmail.com';
-    passwordController.text = '********';
   }
 
   @override
@@ -58,6 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
               "Signed in successfully!",
               backgroundColor: AppColors.successColor,
             );
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (BuildContext context)=>TaskScreen(userId: state.user.uid)));
           } else if (state is AuthError) {
             _showSnackBar(state.message);
           }
@@ -108,6 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: emailController,
                   keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
+                    hint: Text('test@mail.com'),
                     suffixIcon: Icon(
                       Icons.check_circle,
                       color: Colors.green[400],
@@ -140,6 +140,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   controller: passwordController,
                   obscureText: !_isPasswordVisible,
                   decoration: InputDecoration(
+                    hint: Text('****'),
                     suffixIcon: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -202,7 +203,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 }
                               },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.beigeColor,
+                          backgroundColor: AppColors.accentColor,
                           foregroundColor: Colors.black87,
                           elevation: 3,
                           shape: RoundedRectangleBorder(
@@ -268,7 +269,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.beigeColor,
+                            color: AppColors.primaryColor,
                           ),
                         ),
                       ),

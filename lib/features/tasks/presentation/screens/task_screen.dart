@@ -27,21 +27,21 @@ class _TaskListScreenState extends State<TaskScreen> {
 
   Priority? _filterPriority;
   bool _showCompleted = true;
-    final List<Map<String, dynamic>> todayTasks = [
-    {'title': 'Schedule dentist appointment', 'tags': ['Personal']},
-    {'title': 'Prepare Team Meeting', 'tags': ['Apps', 'Work']},
-  ];
+  //   final List<Map<String, dynamic>> todayTasks = [
+  //   {'title': 'Schedule dentist appointment', 'tags': ['Personal']},
+  //   {'title': 'Prepare Team Meeting', 'tags': ['Apps', 'Work']},
+  // ];
 
-  final List<Map<String, dynamic>> tomorrowTasks = [
-    {'title': 'Call Charlotte', 'tags': ['Personal']},
-    {'title': 'Submit exercise 3.1', 'tags': ['CS', 'Math']},
-    {'title': 'Prepare A/B Test', 'tags': ['Apps', 'Work']},
-  ];
+  // final List<Map<String, dynamic>> tomorrowTasks = [
+  //   {'title': 'Call Charlotte', 'tags': ['Personal']},
+  //   {'title': 'Submit exercise 3.1', 'tags': ['CS', 'Math']},
+  //   {'title': 'Prepare A/B Test', 'tags': ['Apps', 'Work']},
+  // ];
 
-  final List<Map<String, dynamic>> thisWeekTasks = [
-    {'title': 'Submit exercise 3.2', 'tags': ['CS', 'Math']},
-    {'title': 'Water plants', 'tags': ['Personal']},
-  ];
+  // final List<Map<String, dynamic>> thisWeekTasks = [
+  //   {'title': 'Submit exercise 3.2', 'tags': ['CS', 'Math']},
+  //   {'title': 'Water plants', 'tags': ['Personal']},
+  // ];
   @override
   void initState() {
     super.initState();
@@ -125,7 +125,7 @@ class _TaskListScreenState extends State<TaskScreen> {
                 width: 40,
                 height: 5,
                 decoration: BoxDecoration(
-                  color: AppColors.beigeColor.withOpacity(0.5),
+                  color: AppColors.accentColor.withOpacity(0.5),
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
@@ -177,7 +177,7 @@ class _TaskListScreenState extends State<TaskScreen> {
         prefixIcon: Icon(Icons.edit_outlined, color: AppColors.greyColor),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: AppColors.beigeColor, width: 2),
+          borderSide: const BorderSide(color: AppColors.accentColor, width: 2),
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
@@ -200,7 +200,7 @@ class _TaskListScreenState extends State<TaskScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: AppColors.beigeColor, width: 2),
+          borderSide: const BorderSide(color: AppColors.accentColor, width: 2),
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
@@ -261,7 +261,7 @@ class _TaskListScreenState extends State<TaskScreen> {
         return Theme(
           data: ThemeData.light().copyWith(
             colorScheme: const ColorScheme.light(
-              primary: AppColors.beigeColor,
+              primary: AppColors.appsTagColor,
               onPrimary: AppColors.whiteColor,
               onSurface: AppColors.blackColor,
             ),
@@ -349,8 +349,8 @@ class _TaskListScreenState extends State<TaskScreen> {
           child: ElevatedButton(
             onPressed: () => _saveTask(task),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.beigeColor,
-              foregroundColor: AppColors.blackColor,
+              backgroundColor: AppColors.primaryColor,
+              foregroundColor: AppColors.whiteColor,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -464,7 +464,7 @@ class _TaskListScreenState extends State<TaskScreen> {
           if (state is TaskLoading) {
             return _buildLoadingState(textTheme);
           } else if (state is TaskLoaded) {
-            return _buildTaskList();
+            return _buildTaskList(state, textTheme);
           } else if (state is TaskError) {
             // return _buildErrorState(state, textTheme);
             return Center(child: Text('task is error'));
@@ -474,13 +474,16 @@ class _TaskListScreenState extends State<TaskScreen> {
       ),
     );
   }
+
   Widget _buildLoadingState(TextTheme textTheme) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(AppColors.beigeColor),
+            valueColor: AlwaysStoppedAnimation<Color>(
+              AppColors.appsTagColor.withOpacity(0.2),
+            ),
           ),
           const SizedBox(height: 16),
           Text(
@@ -491,6 +494,7 @@ class _TaskListScreenState extends State<TaskScreen> {
       ),
     );
   }
+
   void _showFilterOptions() {
     showModalBottomSheet(
       context: context,
@@ -585,15 +589,15 @@ class _TaskListScreenState extends State<TaskScreen> {
         FilterChip(
           label: const Text("All"),
           selected: _filterPriority == null,
-          selectedColor: AppColors.beigeColor.withOpacity(0.2),
-          checkmarkColor: AppColors.beigeColor,
+          selectedColor: AppColors.appsTagColor.withOpacity(0.2),
+          checkmarkColor: AppColors.appsTagColor,
           onSelected: (_) => setState(() {
             _filterPriority = null;
             Navigator.pop(context);
           }),
           labelStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
             color: _filterPriority == null
-                ? AppColors.beigeColor
+                ? AppColors.appsTagColor
                 : AppColors.blackColor,
             fontWeight: FontWeight.w600,
           ),
@@ -609,15 +613,15 @@ class _TaskListScreenState extends State<TaskScreen> {
           return FilterChip(
             label: Text(priority.toString().split('.').last),
             selected: _filterPriority == priority,
-            selectedColor: AppColors.beigeColor.withOpacity(0.2),
-            checkmarkColor: AppColors.beigeColor,
+            selectedColor: AppColors.appsTagColor.withOpacity(0.2),
+            checkmarkColor: AppColors.appsTagColor,
             onSelected: (_) => setState(() {
               _filterPriority = priority;
               Navigator.pop(context);
             }),
             labelStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
               color: _filterPriority == priority
-                  ? AppColors.beigeColor
+                  ? AppColors.appsTagColor
                   : AppColors.blackColor,
               fontWeight: FontWeight.w600,
             ),
@@ -641,14 +645,16 @@ class _TaskListScreenState extends State<TaskScreen> {
         FilterChip(
           label: const Text("Show All"),
           selected: _showCompleted,
-          selectedColor: AppColors.beigeColor.withOpacity(0.2),
-          checkmarkColor: AppColors.beigeColor,
+          selectedColor: AppColors.appsTagColor.withOpacity(0.2),
+          checkmarkColor: AppColors.appsTagColor,
           onSelected: (_) => setState(() {
             _showCompleted = true;
             Navigator.pop(context);
           }),
           labelStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
-            color: _showCompleted ? AppColors.beigeColor : AppColors.blackColor,
+            color: _showCompleted
+                ? AppColors.appsTagColor
+                : AppColors.blackColor,
             fontWeight: FontWeight.w600,
           ),
           backgroundColor: AppColors.lightGreyColor,
@@ -662,15 +668,15 @@ class _TaskListScreenState extends State<TaskScreen> {
         FilterChip(
           label: const Text("Show Incomplete"),
           selected: !_showCompleted,
-          selectedColor: AppColors.beigeColor.withOpacity(0.2),
-          checkmarkColor: AppColors.beigeColor,
+          selectedColor: AppColors.appsTagColor.withOpacity(0.2),
+          checkmarkColor: AppColors.appsTagColor,
           onSelected: (_) => setState(() {
             _showCompleted = false;
             Navigator.pop(context);
           }),
           labelStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
             color: !_showCompleted
-                ? AppColors.beigeColor
+                ? AppColors.appsTagColor
                 : AppColors.blackColor,
             fontWeight: FontWeight.w600,
           ),
@@ -684,25 +690,17 @@ class _TaskListScreenState extends State<TaskScreen> {
     );
   }
 
-  Widget _buildTaskCategory(String title, List<Map<String, dynamic>> tasks) {
+  Widget _buildTaskCategory(List<TaskEntity> tasks) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF2F2E41),
-          ),
-        ),
         const SizedBox(height: 10),
         Column(children: tasks.map((task) => _buildTaskItem(task)).toList()),
       ],
     );
   }
 
-  Widget _buildTaskItem(Map<String, dynamic> task) {
+  Widget _buildTaskItem(TaskEntity task) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12.0),
       padding: const EdgeInsets.all(16.0),
@@ -740,7 +738,7 @@ class _TaskListScreenState extends State<TaskScreen> {
           // Task title
           Expanded(
             child: Text(
-              task['title'],
+              task.title,
               style: const TextStyle(
                 fontSize: 16,
                 color: Color(0xFF2F2E41),
@@ -748,264 +746,436 @@ class _TaskListScreenState extends State<TaskScreen> {
               ),
             ),
           ),
-          // Tags
-          Row(
-            children: task['tags'].map<Widget>((tag) {
-              Color tagColor;
-              switch (tag) {
-                case 'Personal':
-                  tagColor = Colors.orange[100]!;
-                  break;
-                case 'Apps':
-                  tagColor = Colors.purple[100]!;
-                  break;
-                case 'Work':
-                  tagColor =
-                      Colors.orange[100]!; // Or a different color if needed
-                  break;
-                case 'CS':
-                  tagColor = Colors.blue[100]!;
-                  break;
-                case 'Math':
-                  tagColor = Colors.green[100]!;
-                  break;
-                default:
-                  tagColor = Colors.grey[200]!;
-              }
-              return Container(
-                margin: const EdgeInsets.only(left: 8),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: tagColor,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  tag,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: tag == 'Personal' || tag == 'Work'
-                        ? Colors.orange[800]
-                        : (tag == 'Apps'
-                              ? Colors.purple[800]
-                              : (tag == 'CS'
-                                    ? Colors.blue[800]
-                                    : Colors.green[800])),
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
         ],
       ),
     );
   }
-  
-Widget  _buildTaskList() {
-return Stack(
-    children: [
-      // Main content scrollable view
-      SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // The top app bar section
-              Container(
-                height: 180.0,
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF6A5AE0), Color(0xFF8A7AE0)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(2),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: IconButton(
-                              icon: Icon(
-                                Icons.grid_view_rounded,
-                                color: AppColors.whiteColor,
-                              ),
-                              onPressed: _showFilterOptions,
-                              tooltip: "Filter Tasks",
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.all(2),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: IconButton(
-                              icon: Icon(
-                                Icons.logout,
-                                color: AppColors.whiteColor,
-                              ),
-                              onPressed: () {
-                                context.read<AuthBloc>().add(
-                                      AuthSignOutRequested(),
-                                    );
-                              },
-                              tooltip: "Log out",
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.3),
-                          borderRadius: BorderRadius.circular(12.0),
-                        ),
-                        child: TextField(
-                          decoration: InputDecoration(
-                            hintText: 'Search',
-                            hintStyle: TextStyle(
-                              color: Colors.grey.withOpacity(0.7),
-                            ),
-                            prefixIcon: Icon(
-                              Icons.search,
-                              color: Colors.grey,
-                            ),
-                            border: InputBorder.none,
-                            enabledBorder: InputBorder.none,
-                            focusedBorder: InputBorder.none,
-                          ),
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              // The rest of the content
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Today, 1 May',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      'My tasks',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF2F2E41),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-        
-                    // Today's tasks
-                    _buildTaskCategory('Today', todayTasks),
-                    const SizedBox(height: 20),
-        
-                    // Tomorrow's tasks
-                    _buildTaskCategory('Tomorrow', tomorrowTasks),
-                    const SizedBox(height: 20),
-        
-                    // This week's tasks
-                    _buildTaskCategory('This week', thisWeekTasks),
-                    const SizedBox(
-                      height: 100,
-                    ), // Space for bottom navigation
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      // Bottom Navigation Bar
-      Align(
-        alignment: Alignment.bottomCenter,
-        child: Container(
-          height: 70,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(24),
-              topRight: Radius.circular(24),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
-                spreadRadius: 5,
-                blurRadius: 7,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              IconButton(
-                icon: Icon(
-                  Icons.format_list_bulleted_rounded,
-                  color: Colors.grey[400],
-                ),
-                onPressed: () {},
-              ),
-              ElevatedButton(
-                 onPressed: () => _showTaskFormModalSheet(),
-                child: Container(
-                  width: 20,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
+
+  Widget _buildTaskList(TaskLoaded state, TextTheme textTheme) {
+    // final List<TaskEntity> tasks = [TaskEntity(userId: '111', title: "title", description: "description", dueDate: DateTime.now())];
+    List<TaskEntity> filteredTasks = state.tasks.where((task) {
+      final matchesPriority =
+          _filterPriority == null || task.priority == _filterPriority;
+      final matchesStatus = _showCompleted || !task.isCompleted;
+      return matchesPriority && matchesStatus;
+    }).toList()..sort((a, b) => a.dueDate.compareTo(b.dueDate));
+
+    if (filteredTasks.isEmpty) {
+      return _buildEmptyState(textTheme);
+    }
+    return Stack(
+      children: [
+        // Main content scrollable view
+        SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // The top app bar section
+                Container(
+                  height: 180.0,
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
                       colors: [Color(0xFF6A5AE0), Color(0xFF8A7AE0)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF6A5AE0).withOpacity(0.4),
-                        spreadRadius: 2,
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: IconButton(
+                                icon: Icon(
+                                  Icons.grid_view_rounded,
+                                  color: AppColors.whiteColor,
+                                ),
+                                onPressed: _showFilterOptions,
+                                tooltip: "Filter Tasks",
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: IconButton(
+                                icon: Icon(
+                                  Icons.logout,
+                                  color: AppColors.whiteColor,
+                                ),
+                                onPressed: () {
+                                  context.read<AuthBloc>().add(
+                                    AuthSignOutRequested(),
+                                  );
+                                },
+                                tooltip: "Log out",
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          child: TextField(
+                            decoration: InputDecoration(
+                              hintText: 'Search',
+                              hintStyle: TextStyle(
+                                color: Colors.grey.withOpacity(0.7),
+                              ),
+                              prefixIcon: Icon(
+                                Icons.search,
+                                color: Colors.grey,
+                              ),
+                              border: InputBorder.none,
+                              enabledBorder: InputBorder.none,
+                              focusedBorder: InputBorder.none,
+                            ),
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                // The rest of the content
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Today, ${DateFormat('d MMMM').format(DateTime.now())}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'My tasks',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF2F2E41),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      // Column(
+                      //   crossAxisAlignment: CrossAxisAlignment.start,
+                      //   children: [
+                      //     SizedBox(height: 30),
+                      //     Flexible(
+                      //       child: ListView.builder(
+                      //         shrinkWrap: true,
+                      //         padding: const EdgeInsets.symmetric(
+                      //           horizontal: 16,
+                      //         ),
+                      //         itemCount: filteredTasks.length,
+                      //         itemBuilder: (context, index) {
+                      //           final task = filteredTasks[index];
+                      //           return _buildTaskItem(task);
+                      //         },
+                      //       ),
+                      //     ),
+                      //   ],
+                      // ),
+                      // Today's tasks
+                      Container(
+                            child: ListView.builder(
+                              shrinkWrap: true,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
+                              itemCount: filteredTasks.length,
+                              itemBuilder: (context, index) {
+                                final task = filteredTasks[index];
+                                return _buildTaskItem(task);
+                              },
+                            ),
+                          ),
+                      const SizedBox(
+                        height: 100,
+                      ), // Space for bottom navigation
                     ],
                   ),
-                  child:Icon(
-                      Icons.add_rounded,
-                      color: Colors.white,),
+                ),
+              ],
+            ),
+          ),
+        ),
+        // Bottom Navigation Bar
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: Container(
+            height: 70,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(24),
+                topRight: Radius.circular(24),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.1),
+                  spreadRadius: 5,
+                  blurRadius: 7,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                IconButton(
+                  icon: Icon(
+                    Icons.format_list_bulleted_rounded,
+                    color: Colors.grey[400],
+                  ),
+                  onPressed: () {},
+                ),
+                ElevatedButton(
+                  onPressed: () => _showTaskFormModalSheet(),
+                  child: Container(
+                    width: 20,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF6A5AE0), Color(0xFF8A7AE0)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF6A5AE0).withOpacity(0.4),
+                          spreadRadius: 2,
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Icon(Icons.add_rounded, color: Colors.white),
                   ),
                 ),
-              IconButton(
-                icon: Icon(
-                  Icons.calendar_today_rounded,
-                  color: Colors.grey[400],
+                IconButton(
+                  icon: Icon(
+                    Icons.calendar_today_rounded,
+                    color: Colors.grey[400],
+                  ),
+                  onPressed: () {},
                 ),
-                onPressed: () {},
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmptyState(TextTheme textTheme) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+                Container(
+                  height: 180.0,
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFF6A5AE0), Color(0xFF8A7AE0)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: IconButton(
+                                icon: Icon(
+                                  Icons.grid_view_rounded,
+                                  color: AppColors.whiteColor,
+                                ),
+                                onPressed: _showFilterOptions,
+                                tooltip: "Filter Tasks",
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: IconButton(
+                                icon: Icon(
+                                  Icons.logout,
+                                  color: AppColors.whiteColor,
+                                ),
+                                onPressed: () {
+                                  context.read<AuthBloc>().add(
+                                    AuthSignOutRequested(),
+                                  );
+                                },
+                                tooltip: "Log out",
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          child: TextField(
+                            decoration: InputDecoration(
+                              hintText: 'Search',
+                              hintStyle: TextStyle(
+                                color: Colors.grey.withOpacity(0.7),
+                              ),
+                              prefixIcon: Icon(
+                                Icons.search,
+                                color: Colors.grey,
+                              ),
+                              border: InputBorder.none,
+                              enabledBorder: InputBorder.none,
+                              focusedBorder: InputBorder.none,
+                            ),
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+        Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.task_alt,
+                size: 100,
+                color: AppColors.greyColor.withOpacity(0.7),
               ),
+              const SizedBox(height: 20),
+              Text(
+                _filterPriority != null || !_showCompleted
+                    ? "No matching tasks found."
+                    : "You're all caught up! No tasks here.",
+                style: textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.blackColor,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              if (_filterPriority != null || !_showCompleted)
+                TextButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      _filterPriority = null;
+                      _showCompleted = true;
+                    });
+                  },
+                  icon: Icon(Icons.clear, color: AppColors.greyColor),
+                  label: Text(
+                    "Clear Filters",
+                    style: textTheme.labelLarge?.copyWith(
+                      color: AppColors.greyColor,
+                    ),
+                  ),
+                ),
             ],
           ),
         ),
-      ),
-    ]);
+          Align(
+          child: Container(
+            height: 70,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(24),
+                topRight: Radius.circular(24),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.1),
+                  spreadRadius: 5,
+                  blurRadius: 7,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                IconButton(
+                  icon: Icon(
+                    Icons.format_list_bulleted_rounded,
+                    color: Colors.grey[400],
+                  ),
+                  onPressed: () {},
+                ),
+                ElevatedButton(
+                  onPressed: () => _showTaskFormModalSheet(),
+                  child: Container(
+                    width: 20,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF6A5AE0), Color(0xFF8A7AE0)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF6A5AE0).withOpacity(0.4),
+                          spreadRadius: 2,
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Icon(Icons.add_rounded, color: Colors.white),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(
+                    Icons.calendar_today_rounded,
+                    color: Colors.grey[400],
+                  ),
+                  onPressed: () {},
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
