@@ -6,5 +6,5 @@ class UserEntity extends Equatable{
     final String email;
     const UserEntity({required this.uid,required this.name,required this.email});
     @override
-    List<Object?> get props => throw UnimplementedError();  
+    List<Object?> get props => [uid, name, email];  
 }
