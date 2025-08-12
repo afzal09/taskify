@@ -159,7 +159,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   }
                                 },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.beigeColor,
+                            backgroundColor: AppColors.accentColor,
                             foregroundColor: AppColors.blackColor,
                             elevation: 3,
                             shape: RoundedRectangleBorder(

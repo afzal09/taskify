@@ -89,7 +89,7 @@ class WelcomeScreen extends StatelessWidget {
                   child: ClipPath(
                     clipper: BottomWaveClipper(),
                     child: Container(
-                      height: MediaQuery.of(context).size.height * 0.25, // Adjust height as needed
+                      height: MediaQuery.of(context).size.height * 0.25,
                       width: double.infinity,
                       color: const Color(0xFF6A5AE0),
                       child: Align(

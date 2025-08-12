@@ -7,8 +7,6 @@ import 'package:intl/intl.dart';
 import 'package:whatbytes_assignment/features/auth/presentation/blocs/auth_bloc.dart';
 import 'package:whatbytes_assignment/features/tasks/domain/entities/task_entity.dart';
 import 'package:whatbytes_assignment/features/tasks/presentation/blocs/task_bloc.dart';
-import 'package:whatbytes_assignment/features/tasks/presentation/blocs/task_event.dart';
-import 'package:whatbytes_assignment/features/tasks/presentation/blocs/task_state.dart';
 import 'package:whatbytes_assignment/src/theme/theme_values.dart';
 
 class TaskScreen extends StatefulWidget {
@@ -25,9 +23,8 @@ class _TaskListScreenState extends State<TaskScreen> {
   DateTime? _selectedDueDate;
   Priority _selectedPriority = Priority.medium;
 
-  // Filters for the task list
   Priority? _filterPriority;
-  bool _showCompleted = true; // true means show all, false means show incomplete only
+  bool _showCompleted = true;
 
   @override
   void initState() {
@@ -42,15 +39,11 @@ class _TaskListScreenState extends State<TaskScreen> {
     super.dispose();
   }
 
-  // Helper to load tasks with current filters
   void _loadInitialTasks() {
-    context.read<TaskBloc>().add(LoadTasks(
-          widget.userId,
-        ));
+    context.read<TaskBloc>().add(LoadTasks(widget.userId));
   }
 
   void _showTaskFormModalSheet({TaskEntity? task}) {
-    // Initialize form with task data if editing
     _titleController.text = task?.title ?? '';
     _descController.text = task?.description ?? '';
     _selectedDueDate = task?.dueDate;
@@ -68,7 +61,7 @@ class _TaskListScreenState extends State<TaskScreen> {
         );
       },
     ).then((_) {
-      // Reset form after closing
+      // Reset form
       _titleController.clear();
       _descController.clear();
       _selectedDueDate = null;
@@ -388,6 +381,9 @@ class _TaskListScreenState extends State<TaskScreen> {
       );
       context.read<TaskBloc>().add(UpdateTask(updatedTask));
     }
+    setState(() {
+      _loadInitialTasks();
+    });
     Navigator.pop(context);
   }
 
@@ -447,11 +443,6 @@ class _TaskListScreenState extends State<TaskScreen> {
                 margin: const EdgeInsets.all(16),
               ),
             );
-          } else if (state is TaskLoaded || state is TaskLoading) {
-            // Re-load tasks if an action (create, update, delete) changes the state
-            // This ensures filters are reapplied if needed.
-            // This listener will ensure the main screen rebuilds with new data after CUD operations.
-            // The actual filtering happens in _buildTaskList
           }
         },
         builder: (context, state) {
@@ -462,7 +453,6 @@ class _TaskListScreenState extends State<TaskScreen> {
           } else if (state is TaskError) {
             return Center(child: Text('Error: ${state.message}'));
           }
-          // Default to loading state or an initial state if none matches
           return _buildLoadingState(textTheme);
         },
       ),
@@ -496,16 +486,15 @@ class _TaskListScreenState extends State<TaskScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
       ),
       builder: (ctx) {
-        // Use StatefulBuilder to manage the internal state of the filter options
-        // without rebuilding the entire TaskScreen until filters are applied.
         return StatefulBuilder(
           builder: (BuildContext context, StateSetter setModalState) {
             return Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: AppColors.backgroundColor,
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(25)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(25),
+                ),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -528,9 +517,9 @@ class _TaskListScreenState extends State<TaskScreen> {
                   Text(
                     "Filter Your Tasks",
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.blackColor,
-                        ),
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.blackColor,
+                    ),
                   ),
                   const SizedBox(height: 20),
 
@@ -538,9 +527,9 @@ class _TaskListScreenState extends State<TaskScreen> {
                   Text(
                     "Priority:",
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.blackColor.withOpacity(0.8),
-                        ),
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.blackColor.withOpacity(0.8),
+                    ),
                   ),
                   const SizedBox(height: 10),
                   _buildPriorityFilterChips(setModalState),
@@ -550,33 +539,29 @@ class _TaskListScreenState extends State<TaskScreen> {
                   Text(
                     "Completion Status:",
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.blackColor.withOpacity(0.8),
-                        ),
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.blackColor.withOpacity(0.8),
+                    ),
                   ),
                   const SizedBox(height: 10),
                   _buildStatusFilterChips(setModalState),
                   const SizedBox(height: 30),
 
-                  // Apply Filters button
                   Center(
                     child: ElevatedButton(
                       onPressed: () {
-                        // When filters are applied, update the main state and pop
                         setState(() {
-                          // The state variables _filterPriority and _showCompleted
-                          // are already updated by the individual chip's setState calls
-                          // within the StatefulBuilder.
-                          // Now, dispatch LoadTasks to re-fetch/re-filter based on these.
                           _loadInitialTasks();
                         });
-                        Navigator.pop(context); // Close the modal
+                        Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryColor,
                         foregroundColor: AppColors.whiteColor,
                         padding: const EdgeInsets.symmetric(
-                            vertical: 12, horizontal: 30),
+                          vertical: 12,
+                          horizontal: 30,
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -585,10 +570,10 @@ class _TaskListScreenState extends State<TaskScreen> {
                       child: Text(
                         "Apply Filters",
                         style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                              fontSize: 16,
-                              color: AppColors.whiteColor,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          fontSize: 16,
+                          color: AppColors.whiteColor,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
@@ -609,10 +594,10 @@ class _TaskListScreenState extends State<TaskScreen> {
                       child: Text(
                         "Clear Filters",
                         style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                              fontSize: 16,
-                              color: AppColors.blackColor,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          fontSize: 16,
+                          color: AppColors.blackColor,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
@@ -642,11 +627,11 @@ class _TaskListScreenState extends State<TaskScreen> {
             });
           },
           labelStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: _filterPriority == null
-                    ? AppColors.appsTagColor
-                    : AppColors.blackColor,
-                fontWeight: FontWeight.w600,
-              ),
+            color: _filterPriority == null
+                ? AppColors.appsTagColor
+                : AppColors.blackColor,
+            fontWeight: FontWeight.w600,
+          ),
           backgroundColor: AppColors.lightGreyColor,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
@@ -667,11 +652,11 @@ class _TaskListScreenState extends State<TaskScreen> {
               });
             },
             labelStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: _filterPriority == priority
-                      ? AppColors.appsTagColor
-                      : AppColors.blackColor,
-                  fontWeight: FontWeight.w600,
-                ),
+              color: _filterPriority == priority
+                  ? AppColors.appsTagColor
+                  : AppColors.blackColor,
+              fontWeight: FontWeight.w600,
+            ),
             backgroundColor: AppColors.lightGreyColor,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
@@ -700,11 +685,11 @@ class _TaskListScreenState extends State<TaskScreen> {
             });
           },
           labelStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: _showCompleted
-                    ? AppColors.appsTagColor
-                    : AppColors.blackColor,
-                fontWeight: FontWeight.w600,
-              ),
+            color: _showCompleted
+                ? AppColors.appsTagColor
+                : AppColors.blackColor,
+            fontWeight: FontWeight.w600,
+          ),
           backgroundColor: AppColors.lightGreyColor,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
@@ -724,11 +709,11 @@ class _TaskListScreenState extends State<TaskScreen> {
             });
           },
           labelStyle: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: !_showCompleted
-                    ? AppColors.appsTagColor
-                    : AppColors.blackColor,
-                fontWeight: FontWeight.w600,
-              ),
+            color: !_showCompleted
+                ? AppColors.appsTagColor
+                : AppColors.blackColor,
+            fontWeight: FontWeight.w600,
+          ),
           backgroundColor: AppColors.lightGreyColor,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
@@ -762,10 +747,11 @@ class _TaskListScreenState extends State<TaskScreen> {
           InkWell(
             onTap: () {
               context.read<TaskBloc>().add(
-                    UpdateTask(
-                      task.copyWith(isCompleted: !task.isCompleted),
-                    ),
-                  );
+                UpdateTask(task.copyWith(isCompleted: !task.isCompleted)),
+              );
+              setState(() {
+                _loadInitialTasks();
+              });
             },
             child: Container(
               width: 24,
@@ -801,8 +787,9 @@ class _TaskListScreenState extends State<TaskScreen> {
                     fontSize: 16,
                     color: AppColors.blackColor,
                     fontWeight: FontWeight.w500,
-                    decoration:
-                        task.isCompleted ? TextDecoration.lineThrough : null,
+                    decoration: task.isCompleted
+                        ? TextDecoration.lineThrough
+                        : null,
                     decorationColor: AppColors.greyColor,
                   ),
                 ),
@@ -813,8 +800,9 @@ class _TaskListScreenState extends State<TaskScreen> {
                     style: TextStyle(
                       fontSize: 14,
                       color: AppColors.greyColor,
-                      decoration:
-                          task.isCompleted ? TextDecoration.lineThrough : null,
+                      decoration: task.isCompleted
+                          ? TextDecoration.lineThrough
+                          : null,
                       decorationColor: AppColors.greyColor,
                     ),
                   ),
@@ -830,12 +818,17 @@ class _TaskListScreenState extends State<TaskScreen> {
                     const SizedBox(width: 4),
                     Text(
                       DateFormat('MMM dd, yyyy').format(task.dueDate),
-                      style: TextStyle(fontSize: 12, color: AppColors.greyColor),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppColors.greyColor,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Container(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: _getPriorityBgColor(task.priority),
                         borderRadius: BorderRadius.circular(8),
@@ -906,8 +899,7 @@ class _TaskListScreenState extends State<TaskScreen> {
           _filterPriority == null || task.priority == _filterPriority;
       final matchesStatus = _showCompleted || !task.isCompleted;
       return matchesPriority && matchesStatus;
-    }).toList()
-      ..sort((a, b) => a.dueDate.compareTo(b.dueDate));
+    }).toList()..sort((a, b) => a.dueDate.compareTo(b.dueDate));
 
     return Stack(
       children: [
@@ -916,11 +908,83 @@ class _TaskListScreenState extends State<TaskScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _TaskAppBar(
-                  onFilterPressed: _showFilterOptions,
-                  onLogoutPressed: () {
-                    context.read<AuthBloc>().add(AuthSignOutRequested());
-                  },
+                Container(
+                  height: 180.0,
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFF6A5AE0), Color(0xFF8A7AE0)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: IconButton(
+                                icon: Icon(
+                                  Icons.grid_view_rounded,
+                                  color: AppColors.whiteColor,
+                                ),
+                                onPressed: _showFilterOptions,
+                                tooltip: "Filter Tasks",
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: IconButton(
+                                icon: Icon(
+                                  Icons.logout,
+                                  color: AppColors.whiteColor,
+                                ),
+                                onPressed: () {
+                                  context.read<AuthBloc>().add(AuthSignOutRequested());
+                                },
+                                tooltip: "Log out",
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(12.0),
+                          ),
+                          child: TextField(
+                            decoration: InputDecoration(
+                              hintText: 'Search',
+                              hintStyle: TextStyle(
+                                color: Colors.grey.withOpacity(0.7),
+                              ),
+                              prefixIcon: Icon(
+                                Icons.search,
+                                color: Colors.grey,
+                              ),
+                              border: InputBorder.none,
+                              enabledBorder: InputBorder.none,
+                              focusedBorder: InputBorder.none,
+                            ),
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(16.0),
@@ -949,17 +1013,18 @@ class _TaskListScreenState extends State<TaskScreen> {
                         _buildEmptyStateContent(textTheme)
                       else
                         ListView.builder(
+                          physics: NeverScrollableScrollPhysics(),
                           shrinkWrap: true,
-                          physics:
-                              const NeverScrollableScrollPhysics(), // Important for nested scroll views
-                          padding: EdgeInsets.zero, // Remove default padding
+                          padding: EdgeInsets.zero,
                           itemCount: filteredTasks.length,
                           itemBuilder: (context, index) {
                             final task = filteredTasks[index];
                             return _buildTaskItem(task);
                           },
                         ),
-                      const SizedBox(height: 100), // Space for bottom navigation
+                      const SizedBox(
+                        height: 100,
+                      ), // Space for bottom navigation
                     ],
                   ),
                 ),
@@ -1026,14 +1091,12 @@ class _TaskListScreenState extends State<TaskScreen> {
                 _filterPriority = null;
                 _showCompleted = true;
               });
-              _loadInitialTasks(); // Reload tasks after clearing filters
+              _loadInitialTasks();
             },
             icon: Icon(Icons.clear, color: AppColors.greyColor),
             label: Text(
               "Clear Filters",
-              style: textTheme.labelLarge?.copyWith(
-                color: AppColors.greyColor,
-              ),
+              style: textTheme.labelLarge?.copyWith(color: AppColors.greyColor),
             ),
           ),
       ],
@@ -1069,6 +1132,9 @@ class _TaskListScreenState extends State<TaskScreen> {
             onPressed: () {
               context.read<TaskBloc>().add(DeleteTask(task.id!, task.userId));
               Navigator.pop(ctx);
+              setState(() {
+                _loadInitialTasks();
+              });
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.errorColor,
@@ -1083,98 +1149,6 @@ class _TaskListScreenState extends State<TaskScreen> {
   }
 }
 
-// Reusable AppBar widget
-class _TaskAppBar extends StatelessWidget {
-  final VoidCallback onFilterPressed;
-  final VoidCallback onLogoutPressed;
-
-  const _TaskAppBar({
-    required this.onFilterPressed,
-    required this.onLogoutPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 180.0,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Color(0xFF6A5AE0), Color(0xFF8A7AE0)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: IconButton(
-                    icon: Icon(
-                      Icons.grid_view_rounded,
-                      color: AppColors.whiteColor,
-                    ),
-                    onPressed: onFilterPressed,
-                    tooltip: "Filter Tasks",
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: IconButton(
-                    icon: Icon(
-                      Icons.logout,
-                      color: AppColors.whiteColor,
-                    ),
-                    onPressed: onLogoutPressed,
-                    tooltip: "Log out",
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(12.0),
-              ),
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: 'Search',
-                  hintStyle: TextStyle(
-                    color: Colors.grey.withOpacity(0.7),
-                  ),
-                  prefixIcon: Icon(
-                    Icons.search,
-                    color: Colors.grey,
-                  ),
-                  border: InputBorder.none,
-                  enabledBorder: InputBorder.none,
-                  focusedBorder: InputBorder.none,
-                ),
-                style: const TextStyle(color: Colors.white),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// Reusable Bottom Navigation Bar widget
 class _BottomNavBar extends StatelessWidget {
   final VoidCallback onAddTaskPressed;
   final VoidCallback onCalendarPressed;
@@ -1213,19 +1187,19 @@ class _BottomNavBar extends StatelessWidget {
                 Icons.format_list_bulleted_rounded,
                 color: Colors.grey[400],
               ),
-              onPressed: () {}, // Placeholder for list view action
+              onPressed: () {},
             ),
             ElevatedButton(
               onPressed: onAddTaskPressed,
               style: ElevatedButton.styleFrom(
                 shape: const CircleBorder(),
                 padding: EdgeInsets.zero,
-                elevation: 0, // Remove default elevation
-                backgroundColor: Colors.transparent, // Make button transparent
+                elevation: 0,
+                backgroundColor: Colors.transparent,
               ),
               child: Container(
-                width: 50, // Increased size for better tap target
-                height: 50, // Increased size for better tap target
+                width: 50,
+                height: 50,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [Color(0xFF6A5AE0), Color(0xFF8A7AE0)],
@@ -1242,14 +1216,15 @@ class _BottomNavBar extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: const Icon(Icons.add_rounded, color: Colors.white, size: 30),
+                child: const Icon(
+                  Icons.add_rounded,
+                  color: Colors.white,
+                  size: 30,
+                ),
               ),
             ),
             IconButton(
-              icon: Icon(
-                Icons.calendar_today_rounded,
-                color: Colors.grey[400],
-              ),
+              icon: Icon(Icons.calendar_today_rounded, color: Colors.grey[400]),
               onPressed: onCalendarPressed,
             ),
           ],

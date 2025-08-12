@@ -1,5 +1,6 @@
-import 'package:equatable/equatable.dart';
-import 'package:whatbytes_assignment/features/tasks/domain/entities/task_entity.dart';
+
+
+part of 'task_bloc.dart';
 
 abstract class TaskState extends Equatable {
   const TaskState();

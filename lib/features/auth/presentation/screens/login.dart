@@ -108,10 +108,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
                     hint: Text('test@mail.com'),
-                    suffixIcon: Icon(
-                      Icons.check_circle,
-                      color: Colors.green[400],
-                    ),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {

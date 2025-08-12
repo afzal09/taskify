@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:whatbytes_assignment/di_container.dart' as di;
 import 'package:whatbytes_assignment/features/auth/presentation/blocs/auth_bloc.dart';
-import 'package:whatbytes_assignment/features/auth/presentation/screens/login.dart';
 import 'package:whatbytes_assignment/features/auth/presentation/screens/welcome.dart';
 import 'package:whatbytes_assignment/features/tasks/presentation/blocs/task_bloc.dart';
 import 'package:whatbytes_assignment/features/tasks/presentation/screens/task_screen.dart';

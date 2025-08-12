@@ -1,10 +1,13 @@
 import 'package:bloc/bloc.dart';
+import 'package:equatable/equatable.dart';
+import 'package:whatbytes_assignment/features/tasks/domain/entities/task_entity.dart';
 import 'package:whatbytes_assignment/features/tasks/domain/usecases/add_task_usecase.dart';
 import 'package:whatbytes_assignment/features/tasks/domain/usecases/delete_task_usecase.dart';
 import 'package:whatbytes_assignment/features/tasks/domain/usecases/get_tasks_stream_usecase.dart';
 import 'package:whatbytes_assignment/features/tasks/domain/usecases/update_task_usecase.dart';
-import 'package:whatbytes_assignment/features/tasks/presentation/blocs/task_event.dart';
-import 'package:whatbytes_assignment/features/tasks/presentation/blocs/task_state.dart';
+
+part 'task_event.dart';
+part 'task_state.dart';
 
 class TaskBloc extends Bloc<TaskEvent, TaskState> {
   final AddTaskUseCase addTaskUseCase;
